@@ -6,7 +6,14 @@ from CarConnect.entity.admin import Admin
 from CarConnect.entity.customer import Customer
 from CarConnect.entity.vehicle import Vehicle
 from CarConnect.entity.reservation import Reservation
+from CarConnect.exceptions import DatabaseConnectionException
 from CarConnect.util.db_conn_util import DBConnUtil
+from CarConnect.exceptions.admin_not_found_exception import AdminNotFoundException
+from CarConnect.exceptions.invalid_input_exception import InvalidInputException
+from CarConnect.exceptions.authentication_exception import AuthenticationException
+from CarConnect.exceptions.vehicle_not_found_exception import VehicleNotFoundException
+from CarConnect.exceptions.reservation_exception import ReservationException
+from CarConnect.exceptions.customer_not_found_exception import CustomerNotFoundException
 
 db = DBConnUtil()
 admin_service = AdminService(db)
@@ -25,43 +32,72 @@ def admin_menu():
     choice = input("Enter choice: ")
 
     if choice == '1':
-        first = input("First name: ")
-        last = input("Last name: ")
-        email = input("Email: ")
-        phone = input("Phone: ")
-        username = input("Username: ")
-        password = input("Password: ")
-        role = input("Role('super admin', 'fleet manager'): ")
+        try:
+            first = input("First name: ")
+            last = input("Last name: ")
+            email = input("Email: ")
+            phone = input("Phone: ")
+            username = input("Username: ")
+            password = input("Password: ")
+            role = input("Role('super admin', 'fleet manager'): ")
 
-        admin = Admin(None, first, last, email, phone, username, password, role, None)
-        admin_service.register_admin(admin)
-        print("Admin registered successfully.")
+            admin = Admin(None, first, last, email, phone, username, password, role, None)
+            admin_service.register_admin(admin)
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
+        except DatabaseConnectionException as e:
+            print(f"Database Error: {e}")
 
     elif choice == '2':
-        admin_id = int(input("Admin ID: "))
-        admin = admin_service.get_admin_by_id(admin_id)
-        print(admin)
+        try:
+            admin_id = input("Admin ID: ")
+            admin = admin_service.get_admin_by_id(admin_id)
+            print(admin)
+        except AdminNotFoundException as e:
+            print(e)
+        except DatabaseConnectionException as e:
+            print(e)
+        except InvalidInputException as e:
+            print(e)
 
     elif choice == '3':
-        username = input("Enter Username: ")
-        admin = admin_service.get_admin_by_username(username)
-        print(admin)
+        try:
+            username = input("Enter Username: ")
+            admin = admin_service.get_admin_by_username(username)
+            print(admin)
+        except AdminNotFoundException as e:
+            print(e)
+        except DatabaseConnectionException as e:
+            print(e)
+        except InvalidInputException as e:
+            print(e)
 
     elif choice == '4':
-        admin_id = int(input("Admin ID: "))
-        first_name = input("Enter first name: ")
-        last_name = input("Enter last name: ")
-        email = input("New Email: ")
-        phone = input("New Phone: ")
-        username = input("New Username: ")
-        role = input("Role('super admin', 'fleet manager'): ")
-        admin_service.update_admin(admin_id,first_name,last_name ,email, phone,username, role)
-        print("Admin updated.")
+        try:
+            admin_id = input("Admin ID: ")
+            first_name = input("Enter first name: ")
+            last_name = input("Enter last name: ")
+            email = input("New Email: ")
+            phone = input("New Phone: ")
+            username = input("New Username: ")
+            role = input("Role('super admin', 'fleet manager'): ")
+            admin_service.update_admin(admin_id,first_name,last_name ,email, phone,username, role)
+            print("Admin updated.")
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
+        except DatabaseConnectionException as e:
+            print(f"Registration Failed: {e}")
 
     elif choice == '5':
-        admin_id = int(input("Admin ID: "))
-        admin_service.delete_admin(admin_id)
-        print("Admin deleted.")
+        try:
+            admin_id = input("Admin ID: ")
+            admin_service.delete_admin(admin_id)
+        except AdminNotFoundException as e:
+            print(f"Admin Not Found: {e}")
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
+        except DatabaseConnectionException as e:
+            print(f"Registration Failed: {e}")
 
 def customer_menu():
     print("\n--- Customer Menu ---")
@@ -75,50 +111,79 @@ def customer_menu():
     choice = input("Enter choice: ")
 
     if choice == '1':
-        first = input("First name: ")
-        last = input("Last name: ")
-        email = input("Email: ")
-        phone = input("Phone: ")
-        address = input("Address: ")
-        username = input("Username: ")
-        password = input("Password: ")
+        try:
+            first = input("First name: ")
+            last = input("Last name: ")
+            email = input("Email: ")
+            phone = input("Phone: ")
+            address = input("Address: ")
+            username = input("Username: ")
+            password = input("Password: ")
 
-        customer = Customer(None, first, last, email, phone, address, username, password, None)
-        customer_service.register_customer(customer)
-        print("Customer registered.")
+            customer = Customer(None, first, last, email, phone, address, username, password, None)
+            customer_service.register_customer(customer)
+            print("Customer registered.")
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
 
     elif choice == '2':
-        customer_id = int(input("Customer ID: "))
-        customer = customer_service.get_customer_by_id(customer_id)
-        print(customer)
+        try:
+            customer_id = input("Customer ID: ")
+            customer = customer_service.get_customer_by_id(customer_id)
+            print(customer)
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
+        except CustomerNotFoundException as e:
+            print(f"Customer Error: {e}")
 
     elif choice == '3':
-        username = input("Enter Username: ")
-        customer = customer_service.get_customer_by_username(username)
-        print(customer)
+        try:
+            username = input("Enter Username: ")
+            customer = customer_service.get_customer_by_username(username)
+            print(customer)
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
+        except CustomerNotFoundException as e:
+            print(f"Customer Error: {e}")
 
     elif choice == '4':
-        customer_id = int(input("Customer ID: "))
-        first_name = input("First Name: ")
-        last_name = input("Last Name: ")
-        email = input("New Email: ")
-        phone = input("New Phone: ")
-        address = input("New Address: ")
-        username = input("Username: ")
-        customer_service.update_customer(customer_id,first_name,last_name, email, phone, address,username)
-        print("Customer updated.")
+        try:
+            customer_id = input("Customer ID: ")
+            first_name = input("First Name: ")
+            last_name = input("Last Name: ")
+            email = input("New Email: ")
+            phone = input("New Phone: ")
+            address = input("New Address: ")
+            username = input("Username: ")
+            customer_service.update_customer(customer_id,first_name,last_name, email, phone, address,username)
+            print("Customer updated.")
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
+        except CustomerNotFoundException as e:
+            print(f"Customer Error: {e}")
+
 
     elif choice == '5':
-        customer_id = int(input("Customer ID: "))
-        customer_service.delete_customer(customer_id)
-        print("Customer deleted.")
+        try:
+            customer_id = input("Customer ID: ")
+            customer_service.delete_customer(customer_id)
+            print("Customer deleted.")
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
+        except CustomerNotFoundException as e:
+            print(f"Customer Error: {e}")
 
     elif choice == '6':
-        username = input("Username: ")
-        password = input("Password: ")
-        customer = customer_service.authenticate_customer(username, password)
-        print(customer)
-        print("Authentication successful!")
+        try:
+            username = input("Username: ")
+            password = input("Password: ")
+            customer = customer_service.authenticate_customer(username, password)
+            print(customer)
+            print("Authentication successful!")
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
+        except AuthenticationException as e:
+            print(f"Error:{e}")
 
 def vehicle_menu():
     print("\n--- Vehicle Menu ---")
@@ -131,39 +196,68 @@ def vehicle_menu():
     choice = input("Enter choice: ")
 
     if choice == '1':
-        model = input("Model: ")
-        make = input("Make: ")
-        year = int(input("Year: "))
-        color = input("Color: ")
-        reg_no = input("Registration Number: ")
-        availability = int(input("Availability (1/0): "))
-        daily_rate = float(input("Daily Rate: "))
+        try:
+            model = input("Model: ")
+            make = input("Make: ")
+            year = input("Year: ")
+            color = input("Color: ")
+            reg_no = input("Registration Number: ")
+            availability = input("Availability (1/0): ")
+            daily_rate = input("Daily Rate: ")
 
-        vehicle = Vehicle(None, model, make, year, color, reg_no, availability, daily_rate)
-        vehicle_service.add_vehicle(vehicle)
-        print("Vehicle added.")
+            vehicle = Vehicle(None, model, make, year, color, reg_no, availability, daily_rate)
+            vehicle_service.add_vehicle(vehicle)
+            print("Vehicle added.")
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
+        except DatabaseConnectionException as e:
+            print(f"Registration Failed: {e}")
 
     elif choice == '2':
-        vehicle_id = int(input("Vehicle ID: "))
-        vehicle = vehicle_service.get_vehicle_by_id(vehicle_id)
-        print(vehicle)
+        try:
+            vehicle_id = input("Vehicle ID: ")
+            if not vehicle_id.isdigit():
+                raise InvalidInputException("Vehicle Id must be Integer")
+            vehicle = vehicle_service.get_vehicle_by_id(vehicle_id)
+            print(vehicle)
+        except VehicleNotFoundException as e:
+            print(f"Not Found: {e}")
+        except DatabaseConnectionException as e:
+            print(f"Database Error: {e}")
 
     elif choice == '3':
-        vehicles = vehicle_service.get_available_vehicles()
-        for v in vehicles:
-            print(v)
+        try:
+            vehicles = vehicle_service.get_available_vehicles()
+            for v in vehicles:
+                print(v)
+        except DatabaseConnectionException as e:
+            print(f"Database Error: {e}")
 
     elif choice == '4':
-        vehicle_id = int(input("Vehicle ID: "))
-        rate = float(input("New Daily Rate: "))
-        availability = int(input("Availability (1/0): "))
-        vehicle_service.update_vehicle(vehicle_id, rate, availability)
-        print("Vehicle updated.")
+        try:
+            vehicle_id = input("Vehicle ID: ")
+            rate = input("New Daily Rate: ")
+            availability = input("Availability (1/0): ")
+            vehicle_service.update_vehicle(vehicle_id, rate, availability)
+            print("Vehicle updated.")
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
+        except VehicleNotFoundException as e:
+            print(f"Not Found: {e}")
+        except DatabaseConnectionException as e:
+            print(f"Database Error: {e}")
 
     elif choice == '5':
-        vehicle_id = int(input("Vehicle ID: "))
-        vehicle_service.remove_vehicle(vehicle_id)
-        print("Vehicle removed.")
+        try:
+            vehicle_id = input("Vehicle ID: ")
+            vehicle_service.remove_vehicle(vehicle_id)
+            print("Vehicle removed.")
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
+        except VehicleNotFoundException as e:
+            print(f"Not Found: {e}")
+        except DatabaseConnectionException as e:
+            print(f"Database Error: {e}")
 
 def reservation_menu():
     print("\n--- Reservation Menu ---")
@@ -179,36 +273,59 @@ def reservation_menu():
     choice = input("Enter choice: ")
 
     if choice == '1':
-        customer_id = int(input("Customer ID: "))
-        vehicle_id = int(input("Vehicle ID: "))
-        start_date = input("Start Date (YYYY-MM-DD): ")
-        end_date = input("End Date (YYYY-MM-DD): ")
-        total_cost = float(input("Total Cost: "))
-        status = input("Status: ")
+        try:
+            customer_id = input("Customer ID: ")
+            vehicle_id = input("Vehicle ID: ")
+            start_date = input("Start Date (YYYY-MM-DD): ")
+            end_date = input("End Date (YYYY-MM-DD): ")
+            total_cost = input("Total Cost: ")
+            status = input("Status('pending', 'confirmed', 'completed', 'cancelled'): ")
 
-        reservation = Reservation(None, customer_id, vehicle_id, start_date, end_date, total_cost, status)
-        reservation_service.create_reservation(reservation)
-        print("Reservation created.")
+            reservation = Reservation(None, customer_id, vehicle_id, start_date, end_date, total_cost, status)
+            reservation_service.create_reservation(reservation)
+            print("Reservation created.")
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
 
     elif choice == '2':
-        reservation_id = int(input("Reservation ID: "))
-        reservation = reservation_service.get_reservation_by_id(reservation_id)
-        print(reservation)
+        try:
+            reservation_id = input("Reservation ID: ")
+            reservation = reservation_service.get_reservation_by_id(reservation_id)
+            print(reservation)
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
+        except ReservationException as e:
+            print(f"Error: {e}")
 
     elif choice == '3':
-        customer_id = int(input("Customer ID: "))
-        reservations = reservation_service.get_reservations_by_customer_id(customer_id)
+        try:
+            customer_id = input("Customer ID: ")
+            reservations = reservation_service.get_reservations_by_customer_id(customer_id)
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
+        except ReservationException as e:
+            print(f"Error: {e}")
 
     elif choice == '4':
-        reservation_id = int(input("Reservation ID: "))
-        status = input("New Status: ")
-        reservation_service.update_reservation(reservation_id, status)
-        print("Reservation updated.")
+        try:
+            reservation_id = input("Reservation ID: ")
+            status = input("New Status('pending', 'confirmed', 'completed', 'cancelled'): ")
+            reservation_service.update_reservation(reservation_id, status)
+            print("Reservation updated.")
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
+        except ReservationException as e:
+            print(f"Error: {e}")
 
     elif choice == '5':
-        reservation_id = int(input("Reservation ID: "))
-        reservation_service.cancel_reservation(reservation_id)
-        print("Reservation canceled.")
+        try:
+            reservation_id = input("Reservation ID: ")
+            reservation_service.cancel_reservation(reservation_id)
+            print("Reservation canceled.")
+        except InvalidInputException as e:
+            print(f"Input Error: {e}")
+        except ReservationException as e:
+            print(f"Error: {e}")
 
     elif choice == '6':
         reservation_service.generate_reservation_history_report()

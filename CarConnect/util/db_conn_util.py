@@ -9,7 +9,8 @@ class DBConnUtil:
         try:
             self.cursor.execute(query, values) if values else self.cursor.execute(query)
             self.conn.commit()
-            print("Successful!!!")
+            print("DB Successful!!!")
+            return self.cursor.rowcount
         except mysql.connector.Error as e:
             print(f"Error executing query: {e}")
 
