@@ -1,9 +1,8 @@
-from CarConnect.entity.customer import Customer
 from CarConnect.exceptions.invalid_input_exception import InvalidInputException
 from CarConnect.exceptions.authentication_exception import AuthenticationException
 from CarConnect.exceptions.customer_not_found_exception import CustomerNotFoundException
 
-class CustomerService(Customer):
+class CustomerService:
     def __init__(self, db):
         self.db = db
 

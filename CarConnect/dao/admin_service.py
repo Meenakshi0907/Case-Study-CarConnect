@@ -1,9 +1,8 @@
-from CarConnect.entity.admin import Admin
 from CarConnect.exceptions.admin_not_found_exception import AdminNotFoundException
 from CarConnect.exceptions.invalid_input_exception import InvalidInputException
 from CarConnect.exceptions.database_connection_exception import DatabaseConnectionException
 
-class AdminService(Admin):
+class AdminService:
     def __init__(self, db):
         self.db = db
 

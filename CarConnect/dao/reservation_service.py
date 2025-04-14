@@ -2,7 +2,7 @@ from CarConnect.entity.reservation import Reservation
 from CarConnect.exceptions.invalid_input_exception import InvalidInputException
 from CarConnect.exceptions.reservation_exception import ReservationException
 
-class ReservationService(Reservation):
+class ReservationService:
     def __init__(self, db):
         self.db = db
 

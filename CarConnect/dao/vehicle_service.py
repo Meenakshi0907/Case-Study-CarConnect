@@ -1,10 +1,9 @@
-from CarConnect.entity.vehicle import Vehicle
 from CarConnect.exceptions.vehicle_not_found_exception import VehicleNotFoundException
 from CarConnect.exceptions.invalid_input_exception import InvalidInputException
 from CarConnect.exceptions.database_connection_exception import DatabaseConnectionException
 import re
 
-class VehicleService(Vehicle):
+class VehicleService:
     def __init__(self, db):
         self.db = db
 
