@@ -47,14 +47,57 @@ class TestReservationService(unittest.TestCase):
 
     # --- TEST: create_reservation ---
     def test_create_reservation_valid(self):
-        reservation = Reservation(None, "2", "3", date(2024, 5, 1), date(2024, 5, 5), "5000.00", "Confirmed")
+        reservation = Reservation(
+            None, "2", "3", "2024-05-01", "2024-05-05", "0.0", "Confirmed"
+        )
+        # Vehicle is available and daily rate is 1000.0
+        self.mock_db.fetch_one.return_value = (1, 1000.0)
         self.service.create_reservation(reservation)
-        self.mock_db.execute_query.assert_called_once()
+        self.mock_db.fetch_one.assert_called_once_with(
+            "SELECT Availability, DailyRate FROM Vehicle WHERE VehicleID = %s", ("3",)
+        )
+        self.mock_db.execute_query.assert_called_once_with(
+            """
+            INSERT INTO Reservation (CustomerID, VehicleID, StartDate, EndDate, TotalCost, Status)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """,
+            ("2", "3", "2024-05-01", "2024-05-05", 4000.0, "Confirmed")
+        )
 
     def test_create_reservation_invalid_customer_vehicle_id(self):
-        reservation = Reservation(None, "abc", "3", date(2024, 5, 1), date(2024, 5, 5), "5000.00", "Confirmed")
-        with self.assertRaises(InvalidInputException):
+        reservation = Reservation(
+            None, "abc", "3", "2024-05-01", "2024-05-05", "0.0", "Confirmed"
+        )
+        with self.assertRaises(InvalidInputException) as context:
             self.service.create_reservation(reservation)
+        self.assertEqual(str(context.exception), "Customer ID and Vehicle ID must be integers.")
+
+    def test_create_reservation_vehicle_not_found(self):
+        reservation = Reservation(
+            None, "2", "99", "2024-05-01", "2024-05-05", "0.0", "Confirmed"
+        )
+        self.mock_db.fetch_one.return_value = None
+        with self.assertRaises(ReservationException) as context:
+            self.service.create_reservation(reservation)
+        self.assertEqual(str(context.exception), "Vehicle does not exist.")
+
+    def test_create_reservation_vehicle_not_available(self):
+        reservation = Reservation(
+            None, "2", "3", "2024-05-01", "2024-05-05", "0.0", "Confirmed"
+        )
+        self.mock_db.fetch_one.return_value = (0, 1000.0)
+        with self.assertRaises(ReservationException) as context:
+            self.service.create_reservation(reservation)
+        self.assertEqual(str(context.exception), "Vehicle is not available for reservation.")
+
+    def test_create_reservation_invalid_date_range(self):
+        reservation = Reservation(
+            None, "2", "3", "2024-05-05", "2024-05-01", "0.0", "Confirmed"
+        )
+        self.mock_db.fetch_one.return_value = (1, 1000.0)
+        with self.assertRaises(InvalidInputException) as context:
+            self.service.create_reservation(reservation)
+        self.assertEqual(str(context.exception), "End date must be after start date.")
 
     # --- TEST: update_reservation ---
     def test_update_reservation_valid(self):
@@ -110,6 +153,36 @@ class TestReservationService(unittest.TestCase):
         self.service.generate_revenue_report()
         self.mock_db.fetch_query.assert_called_once()
 
+    def test_get_pending_reservation_success(self):
+        self.mock_db.fetch_query.return_value = [
+            (1, 101, 201, "2025-04-20", "2025-04-22", 7000.0, "Pending")
+        ]
+        self.service.get_pending_reservation()
+        self.mock_db.fetch_query.assert_called_once_with(
+            "SELECT * from Reservation WHERE Status = 'Pending'"
+        )
+
+    def test_get_pending_reservation_empty(self):
+        self.mock_db.fetch_query.return_value = []
+        with self.assertRaises(ReservationException) as context:
+            self.service.get_pending_reservation()
+        self.assertEqual(str(context.exception), "No Pending reservations")
+
+    # --- Test: get_confirmed_reservation ---
+    def test_get_confirmed_reservation_success(self):
+        self.mock_db.fetch_query.return_value = [
+            (2, 102, 202, "2025-04-18", "2025-04-20", 6000.0, "Confirmed")
+        ]
+        self.service.get_confirmed_reservation()
+        self.mock_db.fetch_query.assert_called_once_with(
+            "SELECT * from Reservation WHERE Status = 'Confirmed'"
+        )
+
+    def test_get_confirmed_reservation_empty(self):
+        self.mock_db.fetch_query.return_value = []
+        with self.assertRaises(ReservationException) as context:
+            self.service.get_confirmed_reservation()
+        self.assertEqual(str(context.exception), "No Confirmed reservations")
 
 if __name__ == "__main__":
     unittest.main()

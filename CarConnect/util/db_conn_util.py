@@ -1,4 +1,5 @@
 import mysql.connector
+from CarConnect.exceptions.database_connection_exception import DatabaseConnectionException
 
 class DBConnUtil:
     def __init__(self, host="localhost", user="root", password="root", database="CarConnect"):
@@ -26,6 +27,14 @@ class DBConnUtil:
         except mysql.connector.Error as e:
             print(f"Error fetching data: {e}")
             return []
+
+    def fetch_one(self, query, params=None):
+        try:
+            with self.conn.cursor() as cursor:
+                cursor.execute(query, params)
+                return cursor.fetchone()
+        except Exception as e:
+            raise DatabaseConnectionException(f"Database fetch_one failed: {str(e)}")
 
     def close_connection(self):
         self.cursor.close()

@@ -2,6 +2,7 @@ from CarConnect.exceptions.vehicle_not_found_exception import VehicleNotFoundExc
 from CarConnect.exceptions.invalid_input_exception import InvalidInputException
 from CarConnect.exceptions.database_connection_exception import DatabaseConnectionException
 import re
+from tabulate import tabulate
 
 class VehicleService:
     def __init__(self, db):
@@ -13,7 +14,10 @@ class VehicleService:
             row = self.db.fetch_query(query, (vehicle_id,))
             if not row:
                 raise VehicleNotFoundException(f"No vehicle found with ID: {vehicle_id}")
-            print("The vehicle is: ",row)
+
+            headers = ["VehicleID", "Model", "Make", "Year", "Color", "RegistrationNumber", "Availability", "DailyRate"]
+            print(tabulate([row[0]], headers=headers, tablefmt="fancy_grid"))
+
         except DatabaseConnectionException as e:
             raise DatabaseConnectionException(f"Database error: {str(e)}")
 
@@ -21,7 +25,12 @@ class VehicleService:
         try:
             query = "SELECT * FROM Vehicle WHERE Availability = 1"
             rows = self.db.fetch_query(query)
+            if not rows:
+                raise VehicleNotFoundException("No available vehicles found.")
+            headers = ["VehicleID", "Model", "Make", "Year", "Color", "RegistrationNumber", "Availability", "DailyRate"]
+            print(tabulate(rows, headers=headers, tablefmt="fancy_grid"))
             return rows
+
         except DatabaseConnectionException as e:
             raise DatabaseConnectionException(f"Database error: {str(e)}")
 

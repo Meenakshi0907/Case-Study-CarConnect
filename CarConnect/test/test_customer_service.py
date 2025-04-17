@@ -84,7 +84,7 @@ class TestCustomerService(unittest.TestCase):
             self.service.delete_customer("99")
 
     def test_authenticate_customer_valid(self):
-        self.mock_db.fetch_query.return_value = [("1", "Jane", "Doe", "jane@example.com", "1234567890", "Somewhere", "janedoe", "securepass", date.today())]
+        self.mock_db.fetch_query.return_value = [("1", "Jane")]
         self.service.authenticate_customer("janedoe", "securepass")
         self.mock_db.fetch_query.assert_called_once()
 
